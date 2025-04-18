@@ -29,3 +29,10 @@ package-lock.json
 localtest
 
 .VSCodeCounter
+
+# Tencent Cloud EdgeOne
+.env
+.edgeone
+.edgeone/*
+.tef_dist/*
+  
