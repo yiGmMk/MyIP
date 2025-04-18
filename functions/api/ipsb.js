@@ -1,14 +1,15 @@
 import { isValidIP } from '../../common/valid-ip.js';
 
 export async function onRequest({ request, params, env }) {
+
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
     // if (!refererCheck(referer)) {
     //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
     // }
 
-    // 从请求中获取 IP 地址
-    const ipAddress = params.ip;
+    const reqUrl = new URL(request.url);
+    const ipAddress = reqUrl.searchParams.get('ip');
     if (!ipAddress) {
         return new Response(JSON.stringify({ error: 'No IP address provided' }), {
             status: 400,
@@ -28,9 +29,7 @@ export async function onRequest({ request, params, env }) {
         });
     }
 
-    // 构建请求 ip-api.com 的 URL
-    const lang = params.lang || 'en';
-    const url = `http://ip-api.com/json/${ipAddress}?fields=66842623&lang=${lang}`;
+    const url = new URL(`https://api.ip.sb/geoip/${ipAddress}`);
 
     try {
         const apiResponse = await fetch(url);
@@ -38,7 +37,7 @@ export async function onRequest({ request, params, env }) {
             throw new Error(`API responded with status: ${apiResponse.status}`);
         }
         const json = await apiResponse.json();
-        const modifiedJson = modifyJsonForIPAPI(json);
+        const modifiedJson = modifyJsonForIPSB(json);
         return new Response(JSON.stringify(modifiedJson), {
             status: 200,
             headers: {
@@ -55,20 +54,17 @@ export async function onRequest({ request, params, env }) {
     }
 };
 
-function modifyJsonForIPAPI(json) {
-    const { query, country, countryCode, regionName, city, lat, lon, isp, as } = json;
-    const asn = as ? as.split(" ")[0] : '';
-
+function modifyJsonForIPSB(json) {
     return {
-        ip: query,
-        city,
-        region: regionName,
-        country: countryCode,
-        country_name: country,
-        country_code: countryCode,
-        latitude: lat,
-        longitude: lon,
-        asn,
-        org: isp
+        ip: json.ip,
+        city: json.city,
+        region: json.region ? json.region : json.city,
+        country: json.country_code,
+        country_name: json.country,
+        country_code: json.country_code,
+        latitude: json.latitude,
+        longitude: json.longitude,
+        asn: "AS" + json.asn,
+        org: json.isp
     };
 }

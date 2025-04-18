@@ -7,9 +7,9 @@ export async function onRequest({ request, params, env }) {
     //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
     // }
 
-
     // 从请求中获取 IP 地址
-    const ipAddress = params.ip;
+    const reqUrl = new URL(request.url);
+    const ipAddress = reqUrl.searchParams.get('ip');
     if (!ipAddress) {
         return new Response(JSON.stringify({ error: 'No IP address provided' }), {
             status: 400,
@@ -29,9 +29,9 @@ export async function onRequest({ request, params, env }) {
         });
     }
 
-    const keys = (env.IPAPIIS_API_KEY).split(',');
-    const key = keys[Math.floor(Math.random() * keys.length)];
-    const url = `https://api.ipapi.is?q=${ipAddress}&key=${key}`;
+    // 构建请求 ip-api.com 的 URL
+    const lang = reqUrl.searchParams.get('lang') || 'en';
+    const url = `http://ip-api.com/json/${ipAddress}?fields=66842623&lang=${lang}`;
 
     try {
         const apiResponse = await fetch(url);
@@ -57,21 +57,19 @@ export async function onRequest({ request, params, env }) {
 };
 
 function modifyJsonForIPAPI(json) {
-    let asn = json.asn || {};
-    const { ip, location, is_datacenter, is_proxy, is_vpn, is_tor } = json;
+    const { query, country, countryCode, regionName, city, lat, lon, isp, as } = json;
+    const asn = as ? as.split(" ")[0] : '';
 
     return {
-        ip: ip,
-        city: location.city || 'N/A',
-        region: location.state || 'N/A',
-        country: location.country_code || 'N/A',
-        country_name: location.country || 'N/A',
-        country_code: location.country_code || 'N/A',
-        latitude: location.latitude || 'N/A',
-        longitude: location.longitude || 'N/A',
-        asn: asn.asn === undefined ? 'N/A' : 'AS' + asn.asn,
-        org: asn.org || 'N/A',
-        isHosting: is_datacenter || false,
-        isProxy: is_proxy || is_vpn || is_tor || false
+        ip: query,
+        city,
+        region: regionName,
+        country: countryCode,
+        country_name: country,
+        country_code: countryCode,
+        latitude: lat,
+        longitude: lon,
+        asn,
+        org: isp
     };
 }
