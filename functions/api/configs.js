@@ -1,16 +1,11 @@
 import { refererCheck } from '../../common/referer-check.js';
 
 // 验证环境变量是否存在，以进行前端功能的开启和关闭
-export default (req, res) => {
-    // 限制请求方法
-    if (req.method !== 'GET') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
+export function onRequestGet({ request }) {
     // 限制只能从指定域名访问
-    const referer = req.headers.referer;
+    const referer = request.headers.referer;
     if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
     }
 
     const hostname = referer ? new URL(referer).hostname : '';
@@ -30,5 +25,10 @@ export default (req, res) => {
     for (const key in envConfigs) {
         result[key] = !!envConfigs[key];
     }
-    res.status(200).json(result);
-};
+    return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
