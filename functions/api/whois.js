@@ -1,6 +1,9 @@
 export async function onRequest({ request, params, env }) {
+
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
+    console.log('referer', referer, 'env', env);
+
     if (!refererCheck(referer, env)) {
         return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
             status: 403,
@@ -79,7 +82,7 @@ function isValidIP(ip) {
 };
 
 function refererCheck(referer, env) {
-    const allowedDomains = ['localhost', ...(env.ALLOWED_DOMAINS || '').split(',')];
+    const allowedDomains = ['localhost', 'client', ...(env.ALLOWED_DOMAINS || '').split(',')];
 
     if (referer) {
         const domain = new URL(referer).hostname;
