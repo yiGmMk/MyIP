@@ -49,7 +49,10 @@ export async function onRequest({ request, params, env }) {
     //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
     // }
 
-    const { hostname, type } = params;
+    // 从请求中获取 IP 地址
+    const reqUrl = new URL(request.url);
+    const hostname = reqUrl.searchParams.get('hostname');
+    const type = reqUrl.searchParams.get('type');
 
     if (typeof hostname !== 'string') {
         return new Response(JSON.stringify({ error: 'Hostname parameter must be a string' }), {
