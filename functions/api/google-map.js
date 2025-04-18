@@ -1,11 +1,8 @@
-import { get } from 'https';
-import { refererCheck } from '../common/referer-check.js';
-
 // 验证请求合法性
-function isValidRequest(req) {
-    const isLatitudeValid = /^-?\d+(\.\d+)?$/.test(req.query.latitude);
-    const isLongitudeValid = /^-?\d+(\.\d+)?$/.test(req.query.longitude);
-    const isLanguageValid = /^[a-z]{2}$/.test(req.query.language);
+function isValidRequest(params) {
+    const isLatitudeValid = /^-?\d+(\.\d+)?$/.test(params.latitude);
+    const isLongitudeValid = /^-?\d+(\.\d+)?$/.test(params.longitude);
+    const isLanguageValid = /^[a-z]{2}$/.test(params.language);
 
     if (!isLatitudeValid || !isLongitudeValid || !isLanguageValid) {
         return false;
@@ -38,23 +35,33 @@ const styles = {
     ]
 };
 
-export default (req, res) => {
+export async function onRequest({ request, params, env }) {
     // 限制只能从指定域名访问
-    const referer = req.headers.referer;
-    if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
-    }
+    const referer = request.headers.get('Referer');
+    // if (!refererCheck(referer)) {
+    //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+    // }
 
     // 检查请求是否合法
-    if (!isValidRequest(req)) {
-        return res.status(400).json({ error: 'Invalid request' });
+    if (!isValidRequest(params)) {
+        return new Response(JSON.stringify({ error: 'Invalid request' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
     // 使用 req.query 获取参数
-    const { latitude, longitude, language, CanvasMode } = req.query;
+    const { latitude, longitude, language, CanvasMode } = params;
 
     if (!latitude || !longitude || !language) {
-        return res.status(400).json({ error: 'Missing latitude, longitude, or language' });
+        return new Response(JSON.stringify({ error: 'Missing latitude, longitude, or language' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
     const mapSize = '500x400';
@@ -62,7 +69,7 @@ export default (req, res) => {
     const scale = 2;
     const zoom = 3;
 
-    const apiKeys = (process.env.GOOGLE_MAP_API_KEY || '').split(',');
+    const apiKeys = (env.GOOGLE_MAP_API_KEY || '').split(',');
     const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
     let styleParam = '';
@@ -72,9 +79,27 @@ export default (req, res) => {
 
     const url = `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&markers=color:blue%7C${latitude},${longitude}&scale=${scale}&zoom=${zoom}&maptype=roadmap&language=${language}&format=${fmt}&size=${mapSize}&style=${styleParam}&key=${apiKey}`;
 
-    get(url, apiRes => {
-        apiRes.pipe(res);
-    }).on('error', (e) => {
-        res.status(500).json({ error: e.message });
-    });
+    try {
+        const apiResponse = await fetch(url);
+
+        if (!apiResponse.ok) {
+            throw new Error(`API responded with status: ${apiResponse.status}`);
+        }
+
+        const buffer = await apiResponse.arrayBuffer();
+
+        return new Response(buffer, {
+            status: 200,
+            headers: {
+                'Content-Type': 'image/jpeg'
+            }
+        });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 };

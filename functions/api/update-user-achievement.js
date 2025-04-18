@@ -1,4 +1,4 @@
-import { refererCheck } from '../common/referer-check.js';
+import { refererCheck } from '../../common/referer-check.js';
 
 export default async (req, res) => {
 
@@ -8,21 +8,32 @@ export default async (req, res) => {
         return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
     }
 
-    const key = process.env.IPCHECKING_API_KEY;
+    if (req.method !== 'PUT') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const key = env.IPCHECKING_API_KEY;
 
     if (!key) {
         return res.status(500).json({ error: 'API key is missing' });
     }
 
+    const achievement = req.body;
+    if (!achievement) {
+        return res.status(400).json({ error: 'Achievement name is required' });
+    }
+
     // 构建请求
-    const apiEndpoint = process.env.IPCHECKING_API_ENDPOINT;
-    const url = new URL(`${apiEndpoint}/userinfo?key=${key}`);
+    const apiEndpoint = env.IPCHECKING_API_ENDPOINT;
+    const url = new URL(`${apiEndpoint}/updateuserachievements?key=${key}`);
 
     try {
         const apiResponse = await fetch(url, {
+            method: 'PUT',
             headers: {
                 ...req.headers,
-            }
+            },
+            body: JSON.stringify(req.body),
         });
 
         if (!apiResponse.ok) {
@@ -35,4 +46,5 @@ export default async (req, res) => {
         console.error("Error during API request:", error);
         res.status(500).json({ error: error.message });
     }
+
 }

@@ -1,56 +1,74 @@
-import { get } from 'https';
-import { refererCheck } from '../common/referer-check.js';
-
 const isValidMAC = (address) => {
     const normalizedAddress = address.replace(/[:-]/g, '');
     return normalizedAddress.length >= 6 && normalizedAddress.length <= 12 && /^[0-9A-Fa-f]+$/.test(normalizedAddress);
 }
 
-export default async (req, res) => {
+export async function onRequest({ request, params, env }) {
     // 限制只能从指定域名访问
-    const referer = req.headers.referer;
-    if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
-    }
+    const referer = request.headers.get('Referer');
+    // if (!refererCheck(referer)) {
+    //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+    // }
 
     // 从请求中获取 IP 地址
-    let macAddress = req.query.mac;
+    let macAddress = params.mac;
     if (!macAddress) {
-        return res.status(400).json({ error: 'No MAC address provided' });
+        return new Response(JSON.stringify({ error: 'No MAC address provided' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     } else {
         macAddress = macAddress.replace(/:/g, '').replace(/-/g, '');
     }
 
     // 检查 IP 地址是否合法
     if (!isValidMAC(macAddress)) {
-        return res.status(400).json({ error: 'Invalid MAC address' });
+        return new Response(JSON.stringify({ error: 'Invalid MAC address' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
 
-    const token = process.env.MAC_LOOKUP_API_KEY || '';
+    const token = env.MAC_LOOKUP_API_KEY || '';
 
     const url_hasToken = `https://api.maclookup.app/v2/macs/${macAddress}?apiKey=${token}`;
     const url_noToken = `https://api.maclookup.app/v2/macs/${macAddress}`;
     const url = token ? url_hasToken : url_noToken;
 
-    get(url, apiRes => {
-        let data = '';
-        apiRes.on('data', chunk => data += chunk);
-        apiRes.on('end', async () => {
-            try {
-                const originalJson = JSON.parse(data);
-                if (originalJson.success !== true) {
-                    return res.json({ success: false, error: originalJson.error || 'Data not found' });
+    try {
+        const apiResponse = await fetch(url);
+        if (!apiResponse.ok) {
+            throw new Error(`API responded with status: ${apiResponse.status}`);
+        }
+        const originalJson = await apiResponse.json();
+        if (originalJson.success !== true) {
+            return new Response(JSON.stringify({ success: false, error: originalJson.error || 'Data not found' }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-                const finalData = modifyData(originalJson);
-                res.json(finalData);
-            } catch (e) {
-                res.status(500).json({ error: 'Error parsing JSON' });
+            });
+        }
+        const finalData = modifyData(originalJson);
+        return new Response(JSON.stringify(finalData), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
             }
         });
-    }).on('error', (e) => {
-        res.status(500).json({ error: e.message });
-    });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 };
 
 

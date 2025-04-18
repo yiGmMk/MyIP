@@ -2,6 +2,15 @@ import { refererCheck } from '../../common/referer-check.js';
 
 // 验证环境变量是否存在，以进行前端功能的开启和关闭
 export function onRequest({ request, env }) {
+    // 限制请求方法
+    if (request.method !== 'GET') {
+        return new Response(JSON.stringify({ message: 'Method Not Allowed' }), {
+            status: 405,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
 

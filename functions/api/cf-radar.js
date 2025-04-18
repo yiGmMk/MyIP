@@ -1,29 +1,28 @@
-import { parse } from 'dotenv';
-import { refererCheck } from '../common/referer-check.js';
+import { refererCheck } from '../../common/referer-check.js';
 
 // 创建一个用于设置 headers 的通用函数
-function createFetchOptions() {
+function createFetchOptions(env) {
     return {
         headers: {
-            'Authorization': `Bearer ${process.env.CLOUDFLARE_API}`,
+            'Authorization': `Bearer ${env.CLOUDFLARE_API}`,
             'Content-Type': 'application/json'
         }
     };
 }
 
 // 通用的 fetch 请求函数
-async function fetchFromCloudflare(endpoint) {
+async function fetchFromCloudflare(endpoint, env) {
     const url = `https://api.cloudflare.com/client/v4${endpoint}`;
-    const headers = createFetchOptions().headers;
+    const headers = createFetchOptions(env).headers;
     const options = { headers };
     const response = await fetch(url, options);
     return response.json();
 }
 
 // ASN 信息
-async function getASNInfo(asn) {
+async function getASNInfo(asn, env) {
     try {
-        return await fetchFromCloudflare(`/radar/entities/asns/${asn}`);
+        return await fetchFromCloudflare(`/radar/entities/asns/${asn}`, env);
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch ASN info');
@@ -31,9 +30,9 @@ async function getASNInfo(asn) {
 };
 
 // IP 版本分布
-async function getASNIPVersion(asn) {
+async function getASNIPVersion(asn, env) {
     try {
-        return await fetchFromCloudflare(`/radar/http/summary/ip_version?asn=${asn}&dateRange=7d`);
+        return await fetchFromCloudflare(`/radar/http/summary/ip_version?asn=${asn}&dateRange=7d`, env);
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch ASN IP version');
@@ -41,9 +40,9 @@ async function getASNIPVersion(asn) {
 };
 
 // HTTP 协议分布
-async function getASNHTTPProtocol(asn) {
+async function getASNHTTPProtocol(asn, env) {
     try {
-        return await fetchFromCloudflare(`/radar/http/summary/http_protocol?asn=${asn}&dateRange=7d`);
+        return await fetchFromCloudflare(`/radar/http/summary/http_protocol?asn=${asn}&dateRange=7d`, env);
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch ASN HTTP protocol');
@@ -51,9 +50,9 @@ async function getASNHTTPProtocol(asn) {
 };
 
 // 设备分布
-async function getASNDeviceType(asn) {
+async function getASNDeviceType(asn, env) {
     try {
-        return await fetchFromCloudflare(`/radar/http/summary/device_type?asn=${asn}&dateRange=7d`);
+        return await fetchFromCloudflare(`/radar/http/summary/device_type?asn=${asn}&dateRange=7d`, env);
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch ASN device type');
@@ -61,9 +60,9 @@ async function getASNDeviceType(asn) {
 };
 
 // 机器人分布
-async function getASNBotType(asn) {
+async function getASNBotType(asn, env) {
     try {
-        return await fetchFromCloudflare(`/radar/http/summary/bot_class?asn=${asn}&dateRange=7d`);
+        return await fetchFromCloudflare(`/radar/http/summary/bot_class?asn=${asn}&dateRange=7d`, env);
     } catch (error) {
         console.error(error);
         throw new Error('Failed to fetch ASN bot type');
@@ -71,14 +70,14 @@ async function getASNBotType(asn) {
 };
 
 // 使用 Promise.all 进行并行请求
-async function getAllASNData(asn) {
+async function getAllASNData(asn, env) {
     try {
         const [asnInfo, ipVersion, httpProtocol, deviceType, botType] = await Promise.all([
-            getASNInfo(asn),
-            getASNIPVersion(asn),
-            getASNHTTPProtocol(asn),
-            getASNDeviceType(asn),
-            getASNBotType(asn)
+            getASNInfo(asn, env),
+            getASNIPVersion(asn, env),
+            getASNHTTPProtocol(asn, env),
+            getASNDeviceType(asn, env),
+            getASNBotType(asn, env)
         ]);
         return { asnInfo, ipVersion, httpProtocol, deviceType, botType };
     } catch (error) {
@@ -125,24 +124,42 @@ function filterData(data) {
 }
 
 // 导出函数
-export default async (req, res) => {
+export function onRequest({ request, params, env }) {
+    console.log('env', env);
+
 
     // 限制只能从指定域名访问
-    const referer = req.headers.referer;
-    if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
-    }
+    // const referer = request.headers.get('Referer');
+    // const headers = createFetchOptions(env).headers;
+    // if (!refererCheck(referer)) {
+    //     return new Response(JSON.stringify({ error: 'Invalid referer' }), {
+    //         status: 403,
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
+    // }
 
-    const asn = req.query.asn;
+    const asn = params.asn;
     if (!asn) {
-        return res.status(400).json({ error: 'No ASN provided' });
+        return new Response(JSON.stringify({ error: 'No ASN provided' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
     if (!isValidASN(asn)) {
-        return res.status(400).json({ error: 'Invalid ASN' });
+        return new Response(JSON.stringify({ error: 'Invalid ASN' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
     try {
-        const { asnInfo, ipVersion, httpProtocol, deviceType, botType } = await getAllASNData(asn);
+        const { asnInfo, ipVersion, httpProtocol, deviceType, botType } = getAllASNData(asn, env);
 
         // 清洗数据
         function cleanUpResponseData(data) {
@@ -165,9 +182,19 @@ export default async (req, res) => {
         const finalResponse = formatData(cleanedResponse);
         filterData(finalResponse);
 
-        res.json(finalResponse);
+        return new Response(JSON.stringify(finalResponse), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 }
