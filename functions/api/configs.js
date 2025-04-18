@@ -1,15 +1,9 @@
 // 验证环境变量是否存在，以进行前端功能的开启和关闭
 export function onRequest({ request }) {
     // 限制只能从指定域名访问
-    const referer = request.headers.referer;
+    const referer = request.headers.get('Referer');
 
-    let hostname = '';
-    try {
-        hostname = referer ? new URL(referer).hostname : '';
-    } catch (e) {
-        console.error("Error parsing referer URL:", referer, e);
-        hostname = ''; // Set hostname to empty string to avoid further errors
-    }
+    const hostname = referer ? new URL(referer).hostname : '';
     const allowedHostnames = ['ipcheck.ing', 'www.ipcheck.ing', 'localtest.ipcheck.ing'];
     const originalSite = allowedHostnames.includes(hostname);
 
