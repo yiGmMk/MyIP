@@ -1,7 +1,7 @@
 import { refererCheck } from '../../../common/referer-check';
 
 // 验证环境变量是否存在，以进行前端功能的开启和关闭
-export function onRequestGet({ request }) {
+export function onRequest({ request }) {
     // 限制只能从指定域名访问
     const referer = request.headers.referer;
     if (!refererCheck(referer)) {
