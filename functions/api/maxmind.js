@@ -34,8 +34,8 @@ export async function onRequest({ request, params, env }) {
 
     let cityLookup, asnLookup;
     try {
-        cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
-        asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+        cityLookup = await maxmind.open('../../common/maxmind-db/GeoLite2-City.mmdb');
+        asnLookup = await maxmind.open('../../common/maxmind-db/GeoLite2-ASN.mmdb');
 
         const city = cityLookup.get(ip);
         const asn = asnLookup.get(ip);
