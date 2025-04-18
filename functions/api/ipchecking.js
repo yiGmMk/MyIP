@@ -2,6 +2,8 @@ import { isValidIP } from '../../common/valid-ip.js';
 
 export async function onRequest({ request, params, env }) {
 
+    console.log('params', params, 'env', env);
+
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
     // if (!refererCheck(referer)) {
