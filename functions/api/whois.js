@@ -4,14 +4,14 @@ export async function onRequest({ request, params, env }) {
     const referer = request.headers.get('Referer');
     console.log('referer', referer, 'env', env);
 
-    if (!refererCheck(referer, env)) {
-        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
-            status: 403,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-    }
+    // if (!refererCheck(referer, env)) {
+    //     return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
+    //         status: 403,
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
+    // }
 
     // 从请求中获取 IP 地址
     const reqUrl = new URL(request.url);
@@ -39,12 +39,18 @@ export async function onRequest({ request, params, env }) {
     const apiKey = env.WHOISJSON_API_KEY;
 
     try {
-        let apiUrl = `${whoisApiUrl}?domain=${query}`;
+        const apiUrl = `${whoisApiUrl}?domain=${query}`;
+        const headers = {
+            'Content-Type': 'application/json',
+        };
         if (apiKey) {
-            apiUrl += `&apiKey=${apiKey}`;
+            headers['Authorization'] = `Token=${apiKey}`;
         }
 
-        const apiResponse = await fetch(apiUrl);
+        const apiResponse = await fetch(apiUrl, {
+            method: 'GET',
+            headers: headers
+        });
 
         if (!apiResponse.ok) {
             throw new Error(`API responded with status: ${apiResponse.status}`);
