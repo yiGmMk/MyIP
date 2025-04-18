@@ -12,7 +12,9 @@ export async function onRequest({ request, params, env }) {
     //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
     // }
 
-    const query = params.q;
+    // 从请求中获取 IP 地址
+    const reqUrl = new URL(request.url);
+    const query = reqUrl.searchParams.get('q');
     if (!query) {
         return new Response(JSON.stringify({ error: 'No address provided' }), {
             status: 400,
