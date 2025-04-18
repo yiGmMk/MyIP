@@ -57,7 +57,8 @@ export async function onRequest({ request, params, env }) {
         }
 
         const data = await apiResponse.json();
-        return new Response(JSON.stringify(data), {
+        const transformedData = transformWhoisData(data);
+        return new Response(JSON.stringify(transformedData), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json'
@@ -71,6 +72,26 @@ export async function onRequest({ request, params, env }) {
             }
         });
     }
+}
+
+function transformWhoisData(data) {
+    console.log('whoisjson.com data', data);
+    const transformedData = {};
+    transformedData[data.whoisserver || 'unknown'] = {
+        "Domain Status": data.status || null,
+        "Name Server": data.nameserver || [],
+        "Domain Name": data.name || null,
+        "ROID": null, // This field is not available in the whoisjson.com API
+        "Registrant Name": null, // This field is not available in the whoisjson.com API
+        "Registrant Email": null, // This field is not available in the whoisjson.com API
+        "Registrar": data.registrar?.name || null,
+        "Created Date": data.created || null,
+        "Expiry Date": data.expires || null,
+        "DNSSEC": data.dnssec || null,
+        "text": [], // This field is not available in the whoisjson.com API
+        "__raw": data
+    };
+    return transformedData;
 }
 
 function isValidDomain(domain) {
