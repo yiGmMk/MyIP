@@ -9,7 +9,8 @@ export async function onRequest({ request, params, env }) {
     // }
 
     // 从请求中获取 IP 地址
-    const ipAddress = params.ip;
+    const reqUrl = new URL(request.url);
+    const ipAddress = reqUrl.searchParams.get('ip');
     if (!ipAddress) {
         return new Response(JSON.stringify({ error: 'No IP address provided' }), {
             status: 400,

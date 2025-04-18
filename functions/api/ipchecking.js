@@ -1,8 +1,8 @@
 import { isValidIP } from '../../common/valid-ip.js';
 
-export async function onRequest({ request, params, env }) {
+export async function onRequest({ request, env }) {
 
-    console.log('params', params, 'env', env);
+    console.log('request.url', request.url, 'env', env);
 
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
@@ -11,7 +11,8 @@ export async function onRequest({ request, params, env }) {
     // }
 
     // 从请求中获取 IP 地址
-    const ipAddress = params.ip;
+    const url = new URL(request.url);
+    const ipAddress = url.searchParams.get('ip');
     if (!ipAddress) {
         return new Response(JSON.stringify({ error: 'No IP address provided' }), {
             status: 400,
@@ -43,12 +44,12 @@ export async function onRequest({ request, params, env }) {
     }
 
     // 构建请求
-    const lang = params.lang || 'en';
+    const lang = url.searchParams.get('lang') || 'en';
     const apiEndpoint = env.IPCHECKING_API_ENDPOINT;
-    const url = new URL(`${apiEndpoint}/ipinfo?key=${key}&ip=${ipAddress}&lang=${lang}`);
+    const apiUrl = new URL(`${apiEndpoint}/ipinfo?key=${key}&ip=${ipAddress}&lang=${lang}`);
 
     try {
-        const apiResponse = await fetch(url, {
+        const apiResponse = await fetch(apiUrl, {
             headers: {
                 ...request.headers,
             }

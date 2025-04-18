@@ -1,5 +1,3 @@
-import { refererCheck } from '../../common/referer-check.js';
-
 // 创建一个用于设置 headers 的通用函数
 function createFetchOptions(env) {
     return {
