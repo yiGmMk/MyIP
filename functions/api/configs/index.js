@@ -3,7 +3,13 @@ export function onRequest({ request }) {
     // 限制只能从指定域名访问
     const referer = request.headers.referer;
 
-    const hostname = referer ? new URL(referer).hostname : '';
+    let hostname = '';
+    try {
+        hostname = referer ? new URL(referer).hostname : '';
+    } catch (e) {
+        console.error("Error parsing referer URL:", referer, e);
+        hostname = ''; // Set hostname to empty string to avoid further errors
+    }
     const allowedHostnames = ['ipcheck.ing', 'www.ipcheck.ing', 'localtest.ipcheck.ing'];
     const originalSite = allowedHostnames.includes(hostname);
 
