@@ -1,12 +1,7 @@
-import { refererCheck } from '../../../common/referer-check';
-
 // 验证环境变量是否存在，以进行前端功能的开启和关闭
 export function onRequest({ request }) {
     // 限制只能从指定域名访问
     const referer = request.headers.referer;
-    if (!refererCheck(referer)) {
-        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
-    }
 
     const hostname = referer ? new URL(referer).hostname : '';
     const allowedHostnames = ['ipcheck.ing', 'www.ipcheck.ing', 'localtest.ipcheck.ing'];
