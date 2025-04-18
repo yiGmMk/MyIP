@@ -1,16 +1,14 @@
-import { isValidIP } from '../../common/valid-ip.js';
-
-function isValidDomain(domain) {
-    const domainPattern = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
-    return domainPattern.test(domain);
-}
-
 export async function onRequest({ request, params, env }) {
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
-    // if (!refererCheck(referer)) {
-    //     return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
-    // }
+    if (!refererCheck(referer, env)) {
+        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
+            status: 403,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 
     // 从请求中获取 IP 地址
     const reqUrl = new URL(request.url);
@@ -64,4 +62,28 @@ export async function onRequest({ request, params, env }) {
             }
         });
     }
+}
+
+function isValidDomain(domain) {
+    const domainPattern = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
+    return domainPattern.test(domain);
+}
+
+// 验证IP地址是否合法
+function isValidIP(ip) {
+    const ipv4Pattern =
+        /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv6Pattern =
+        /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4})|(([0-9a-fA-F]{1,4}:){0,6}([0-9a-fA-F]{1,4})?::([0-9a-fA-F]{1,4}:){0,6}([0-9a-fA-F]{1,4})?))$/;
+    return ipv4Pattern.test(ip) || ipv6Pattern.test(ip);
+};
+
+function refererCheck(referer, env) {
+    const allowedDomains = ['localhost', ...(env.ALLOWED_DOMAINS || '').split(',')];
+
+    if (referer) {
+        const domain = new URL(referer).hostname;
+        return allowedDomains.includes(domain);
+    }
+    return false;  // 如果没有提供 referer，返回 false
 }
