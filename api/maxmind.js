@@ -1,13 +1,16 @@
 import maxmind from 'maxmind';
 import { isValidIP } from '../common/valid-ip.js';
 import { refererCheck } from '../common/referer-check.js';
+import path from 'path';
 
 let cityLookup, asnLookup;
 
 // 异步初始化数据库
 async function initDatabases() {
-    cityLookup = await maxmind.open('../common/maxmind-db/GeoLite2-City.mmdb');
-    asnLookup = await maxmind.open('../common/maxmind-db/GeoLite2-ASN.mmdb');
+    const dbPathCity = path.join(__dirname, '../common/maxmind-db/GeoLite2-City.mmdb');
+    const dbPathAsn = path.join(__dirname, '../common/maxmind-db/GeoLite2-ASN.mmdb');
+    cityLookup = await maxmind.open(dbPathCity);
+    asnLookup = await maxmind.open(dbPathAsn);
 }
 
 initDatabases();
