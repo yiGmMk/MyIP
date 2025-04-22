@@ -14,8 +14,12 @@ let cityLookup, asnLookup;
 async function initDatabases() {
     const dbPathCity = path.join(__dirname, '../public/GeoLite2-City.mmdb');
     const dbPathAsn = path.join(__dirname, '../public/GeoLite2-ASN.mmdb');
-    cityLookup = await maxmind.open(dbPathCity);
-    asnLookup = await maxmind.open(dbPathAsn);
+    try {
+        cityLookup = await maxmind.open(dbPathCity);
+        asnLookup = await maxmind.open(dbPathAsn);
+    } catch (error) {
+        console.error("Error initializing databases:", error);
+    }
 }
 
 initDatabases();
