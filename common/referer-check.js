@@ -1,5 +1,8 @@
-function refererCheck(referer, env) {
-    const allowedDomains = ['localhost', ...(env.ALLOWED_DOMAINS || '').split(',')];
+import dotenv from 'dotenv';
+dotenv.config();
+
+function refererCheck(referer) {
+    const allowedDomains = ['localhost', ...(process.env.ALLOWED_DOMAINS || '').split(',')];
 
     if (referer) {
         const domain = new URL(referer).hostname;
