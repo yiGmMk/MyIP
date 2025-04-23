@@ -3,12 +3,12 @@
         {
             "source": "/api/whois",
             "destination": "https://myipapi.programnotes.cn/api/whois",
-            "statusCode": 200
+            "statusCode": 301
         },
         {
             "source": "/api/maxmind",
             "destination": "https://myipapi.programnotes.cn/api/maxmind",
-            "statusCode": 200
+            "statusCode": 301
         }
     ],
     "rewrites": [
