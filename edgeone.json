@@ -2,7 +2,12 @@
     "redirects": [
         {
             "source": "/api/whois",
-            "destination": "https://",
+            "destination": "https://myipapi.programnotes.cn/api/whois",
+            "statusCode": 200
+        },
+        {
+            "source": "/api/maxmind",
+            "destination": "https://myipapi.programnotes.cn/api/maxmind",
             "statusCode": 200
         }
     ]
