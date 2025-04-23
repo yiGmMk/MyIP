@@ -3,12 +3,27 @@
         {
             "source": "/api/whois*",
             "destination": "https://myipapi.programnotes.cn/api/whois:splat",
-            "statusCode": 301
+            "statusCode": 200
         },
         {
             "source": "/api/maxmind/*",
             "destination": "https://myipapi.programnotes.cn/api/maxmind/:splat",
             "statusCode": 301
+        }
+    ],
+    "headers": [
+        {
+            "source": "/*",
+            "headers": [
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "max-age=7200"
+                }
+            ]
         }
     ]
 }
