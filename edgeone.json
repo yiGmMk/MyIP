@@ -10,5 +10,15 @@
             "destination": "https://myipapi.programnotes.cn/api/maxmind",
             "statusCode": 200
         }
+    ],
+    "rewrites": [
+        {
+            "source": "/api/whois",
+            "destination": "https://myipapi.programnotes.cn/api/whois"
+        },
+        {
+            "source": "/api/maxmind",
+            "destination": "https://myipapi.programnotes.cn/api/maxmind"
+        }
     ]
 }
