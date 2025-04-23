@@ -21,7 +21,6 @@ export async function onRequest({ request, params, env }) {
             status: 400,
             headers: {
                 'Content-Type': 'application/json',
-                "Referer": "https://ip.programnotes.cn/"
             }
         });
     }
@@ -42,6 +41,7 @@ export async function onRequest({ request, params, env }) {
         const apiUrl = `${whoisApiUrl}?q=${query}`;
         const headers = {
             'Content-Type': 'application/json',
+            "Referer": "https://ip.programnotes.cn/"
         };
 
         const apiResponse = await fetch(apiUrl, {
@@ -50,7 +50,8 @@ export async function onRequest({ request, params, env }) {
         });
 
         if (!apiResponse.ok) {
-            throw new Error(`API responded with status: ${apiResponse.status}`);
+            const tip = await apiResponse.json();
+            throw new Error(`API responded with status: ${apiResponse.status} ${JSON.stringify(tip)}`);
         }
 
         const data = await apiResponse.json();
