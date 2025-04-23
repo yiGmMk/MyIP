@@ -4,16 +4,25 @@ import { refererCheck } from '../common/referer-check.js';
 
 // 这样写为什么不行,fork的项目是这样写的,实际无法运行
 // 异步初始化数据库
-// async function initDatabases() {
-//     cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
-//     asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
-// }
+// 必须在vercel.json中配置,将文件包含在函数中才能访问文件,Issue: https://github.com/vercel/next.js/discussions/14807
+// 文档: https://vercel.com/docs/project-configuration#functions
+//  "functions": {
+//     "api/maxmind.js": {
+//     "includeFiles": "common/maxmind-db/*.mmdb"
+//  }
+let cityLookup, asnLookup;
 
-// initDatabases();
+async function initDatabases() {
+    cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
+    asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+}
+
+initDatabases();
 
 export default async (req, res) => {
-    let cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
-    let asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+    // let cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
+    // let asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+
     // 限制只能从指定域名访问
     const referer = req.headers.referer;
     if (!refererCheck(referer)) {
