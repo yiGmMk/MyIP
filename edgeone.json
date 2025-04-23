@@ -1,16 +1,4 @@
 {
-    "redirects": [
-        {
-            "source": "/api/whois*",
-            "destination": "https://myipapi.programnotes.cn/api/whois:splat",
-            "statusCode": 200
-        },
-        {
-            "source": "/api/maxmind/*",
-            "destination": "https://myipapi.programnotes.cn/api/maxmind/:splat",
-            "statusCode": 301
-        }
-    ],
     "headers": [
         {
             "source": "/*",

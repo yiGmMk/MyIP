@@ -1,0 +1,69 @@
+import { isValidIP } from '../../common/valid-ip.js';
+
+export async function onRequest({ request, params, env }) {
+
+    console.log('params', params, 'env', env);
+
+    // 限制只能从指定域名访问
+    const referer = request.headers.get('Referer');
+    if (!refererCheck(referer)) {
+        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+    }
+
+    const reqUrl = new URL(request.url);
+    const ip = reqUrl.searchParams.get('ip');
+    const lang = reqUrl.searchParams.get('lang') || 'zh-CN';
+    if (!ip) {
+        return new Response(JSON.stringify({ error: 'No IP address provided' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json',
+                "Referer": "https://ip.programnotes.cn/"
+            }
+        });
+    }
+
+    // 检查 IP 地址是否合法
+    if (!isValidIP(ip)) {
+        return new Response(JSON.stringify({ error: 'Invalid IP address' }), {
+            status: 400,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+
+    // 请求 https://myipapi.programnotes.cn/api/maxmind
+    const whoisApiUrl = 'https://myipapi.programnotes.cn/api/maxmind';
+
+    try {
+        const apiUrl = `${whoisApiUrl}?ip=${ip}&lang=${lang}`;
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+
+        const apiResponse = await fetch(apiUrl, {
+            method: 'GET',
+            headers: headers
+        });
+
+        if (!apiResponse.ok) {
+            throw new Error(`API responded with status: ${apiResponse.status}`);
+        }
+
+        const data = await apiResponse.json();
+        return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+}
