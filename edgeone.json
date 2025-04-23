@@ -1,0 +1,9 @@
+{
+    "redirects": [
+        {
+            "source": "/api/whois",
+            "destination": "https://",
+            "statusCode": 200
+        }
+    ]
+}

@@ -2,18 +2,18 @@ import maxmind from 'maxmind';
 import { isValidIP } from '../common/valid-ip.js';
 import { refererCheck } from '../common/referer-check.js';
 
-// 这样写为什么不行,fork的项目是这样写的,实际无法运行
+let cityLookup, asnLookup;
+
 // 异步初始化数据库
-// async function initDatabases() {
-//     cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
-//     asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
-// }
+async function initDatabases() {
+    cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
+    asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+}
 
-// initDatabases();
+initDatabases();
 
-export default async (req, res) => {
-    let cityLookup = await maxmind.open('common/maxmind-db/GeoLite2-City.mmdb');
-    let asnLookup = await maxmind.open('common/maxmind-db/GeoLite2-ASN.mmdb');
+export default (req, res) => {
+
     // 限制只能从指定域名访问
     const referer = req.headers.referer;
     if (!refererCheck(referer)) {
