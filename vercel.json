@@ -1,6 +1,6 @@
 {
     "functions": {
-        "/api/maxmind.js": {
+        "api/maxmind.js": {
             "includeFiles": "common/maxmind-db/*.mmdb"
         }
     }
