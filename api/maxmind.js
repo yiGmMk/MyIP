@@ -10,18 +10,27 @@ import { refererCheck } from '../common/referer-check.js';
 //     "api/maxmind.js": {
 //     "includeFiles": "common/maxmind-db/*.mmdb"
 //  }
-let cityLookup, asnLookup;
+// let cityLookup, asnLookup;
+// async function initDatabases() {
+//     cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
+//     asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+// }
+// initDatabases();
 
+let cityLookup, asnLookup;
 async function initDatabases() {
     cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
     asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
 }
 
-initDatabases();
+// Initialize databases only once
+let databasesInitialized = false;
 
 export default async (req, res) => {
-    // let cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
-    // let asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
+    if (!databasesInitialized) {
+        await initDatabases();
+        databasesInitialized = true;
+    }
 
     // 限制只能从指定域名访问
     const referer = req.headers.referer;
