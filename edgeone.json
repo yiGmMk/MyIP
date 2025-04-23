@@ -1,8 +1,8 @@
 {
     "redirects": [
         {
-            "source": "/api/whois/*",
-            "destination": "https://myipapi.programnotes.cn/api/whois/:splat",
+            "source": "/api/whois*",
+            "destination": "https://myipapi.programnotes.cn/api/whois:splat",
             "statusCode": 301
         },
         {
