@@ -12,7 +12,7 @@ export default async (req, res) => {
     // 限制只能从指定域名访问
     const referer = req.headers.referer;
     if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+        return res.status(403).json({ error: referer ? 'Access denied' : referer + 'What are you doing?' });
     }
 
 
@@ -28,15 +28,15 @@ export default async (req, res) => {
 
     if (isValidIP(query)) {
         try {
-            const ipinfo = await whoiser.ip(query, { timeout: 5000,raw: true});
+            const ipinfo = await whoiser.ip(query, { timeout: 5000, raw: true });
             res.json(ipinfo);
         } catch (e) {
             res.status(500).json({ error: e.message });
         }
     } else {
         try {
-        const domaininfo = await whoiser.domain(query, { ignorePrivacy: false, timeout: 5000, follow: 2,raw: true});
-        res.json(domaininfo);
+            const domaininfo = await whoiser.domain(query, { ignorePrivacy: false, timeout: 5000, follow: 2, raw: true });
+            res.json(domaininfo);
         } catch (e) {
             res.status(500).json({ error: e.message });
         }
