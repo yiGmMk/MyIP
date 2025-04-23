@@ -1,12 +1,14 @@
 {
-    "rewrites": [
+    "redirects": [
         {
-            "source": "/api/whois",
-            "destination": "https://myipapi.programnotes.cn/api/whois"
+            "source": "/api/whois/*",
+            "destination": "https://myipapi.programnotes.cn/api/whois/:splat",
+            "statusCode": 301
         },
         {
-            "source": "/api/maxmind",
-            "destination": "https://myipapi.programnotes.cn/api/maxmind"
+            "source": "/api/maxmind/*",
+            "destination": "https://myipapi.programnotes.cn/api/maxmind/:splat",
+            "statusCode": 301
         }
     ]
 }
