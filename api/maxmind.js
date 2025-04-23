@@ -12,8 +12,8 @@ import { refererCheck } from '../common/referer-check.js';
 // initDatabases();
 
 export default async (req, res) => {
-    let cityLookup = await maxmind.open('./data/maxmind-db/GeoLite2-City.mmdb');
-    let asnLookup = await maxmind.open('./data/maxmind-db/GeoLite2-ASN.mmdb');
+    let cityLookup = await maxmind.open('./common/maxmind-db/GeoLite2-City.mmdb');
+    let asnLookup = await maxmind.open('./common/maxmind-db/GeoLite2-ASN.mmdb');
     // 限制只能从指定域名访问
     const referer = req.headers.referer;
     if (!refererCheck(referer)) {
