@@ -1,7 +1,4 @@
-import { isValidIP } from '../../common/valid-ip.js';
-
 export async function onRequest({ request, params, env }) {
-
     console.log('params', params, 'env', env);
 
     // 限制只能从指定域名访问
@@ -22,22 +19,11 @@ export async function onRequest({ request, params, env }) {
             }
         });
     }
-
-    // 检查 IP 地址是否合法
-    if (!isValidIP(ip)) {
-        return new Response(JSON.stringify({ error: 'Invalid IP address' }), {
-            status: 400,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-    }
-
     // 请求 https://myipapi.programnotes.cn/api/maxmind
-    const whoisApiUrl = 'https://myipapi.programnotes.cn/api/maxmind';
+    const api = 'https://myipapi.programnotes.cn/api/maxmind';
 
     try {
-        const apiUrl = `${whoisApiUrl}?ip=${ip}&lang=${lang}`;
+        const apiUrl = `${api}?ip=${ip}&lang=${lang}`;
         const headers = {
             'Content-Type': 'application/json',
             "Referer": "https://ip.programnotes.cn/"
