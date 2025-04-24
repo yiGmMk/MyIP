@@ -40,6 +40,7 @@ export async function onRequest({ request, params, env }) {
         const apiUrl = `${whoisApiUrl}?ip=${ip}&lang=${lang}`;
         const headers = {
             'Content-Type': 'application/json',
+            "Referer": "https://ip.programnotes.cn/"
         };
 
         const apiResponse = await fetch(apiUrl, {
