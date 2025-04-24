@@ -22,6 +22,37 @@ export default (req, res) => {}
 *   **可用工具:** 这些环境通常提供用于构建、部署和扩展 Node.js 应用程序的工具。 它们还可以与数据库和其他后端服务集成。
 *   **方法差异:** `req` 对象提供对请求详细信息的访问，`res` 对象提供用于发送响应的方法。 环境变量通过 `process.env` 访问。
 
+### functions 依赖文件
+
+#### vercel中
+
+必须在vercel.json中配置,将文件包含在函数中才能访问文件,Issue: https://github.com/vercel/next.js/discussions/14807
+文档: https://vercel.com/docs/project-configuration#functions
+
+```json
+{
+    "functions": {
+        "api/maxmind.js": {
+            "includeFiles": "common/maxmind-db/*.mmdb"
+        }
+    }
+}
+```
+
+#### edgeone
+
+暂未实现
+
+## 不足
+
+### 1. edgeone.json 配置  redirects 目前仅支持 301跳转
+
+参考文档: https://edgeone.cloud.tencent.com/pages/document/162936771610066944
+
+### 2. 获取参数方式和vercel,netlify不同
+
+### 3. functions import一些包无法工作,如 whoiser (依赖的一些包无法使用:https等)
+
 ## 参考
 
 - [Pages one](https://edgeone.cloud.tencent.com/pages/document/162936866445025280#2c328570-c058-4655-88cb-81936a58cc0d)
