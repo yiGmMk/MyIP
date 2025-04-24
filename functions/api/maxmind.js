@@ -3,8 +3,13 @@ export async function onRequest({ request, params, env }) {
 
     // 限制只能从指定域名访问
     const referer = request.headers.get('Referer');
-    if (!refererCheck(referer)) {
-        return res.status(403).json({ error: referer ? 'Access denied' : 'What are you doing?' });
+    if (!refererCheck(referer, env)) {
+        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
+            status: 403,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
     }
 
     const reqUrl = new URL(request.url);
@@ -53,4 +58,14 @@ export async function onRequest({ request, params, env }) {
             }
         });
     }
+}
+
+function refererCheck(referer, env) {
+    const allowedDomains = ['localhost', 'client', ...(env.ALLOWED_DOMAINS || '').split(',')];
+
+    if (referer) {
+        const domain = new URL(referer).hostname;
+        return allowedDomains.includes(domain);
+    }
+    return false;  // 如果没有提供 referer，返回 false
 }

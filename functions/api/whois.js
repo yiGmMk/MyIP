@@ -4,14 +4,14 @@ export async function onRequest({ request, params, env }) {
     const referer = request.headers.get('Referer');
     console.log('referer', referer, 'env', env);
 
-    // if (!refererCheck(referer, env)) {
-    //     return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
-    //         status: 403,
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         }
-    //     });
-    // }
+    if (!refererCheck(referer, env)) {
+        return new Response(JSON.stringify({ error: referer ? 'Access denied' : 'What are you doing?' }), {
+            status: 403,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 
     // 从请求中获取 IP 地址
     const reqUrl = new URL(request.url);
