@@ -40,16 +40,11 @@ export async function onRequest({ request, params, env }) {
     const url_hasToken = `https://api.maclookup.app/v2/macs/${macAddress}?apiKey=${token}`;
     const url_noToken = `https://api.maclookup.app/v2/macs/${macAddress}`;
     const url = token ? url_hasToken : url_noToken;
-
+    
+    console.log(url);
     try {
-        const headers = {
-            'Content-Type': 'application/json',
-            "Referer": "https://ip.programnotes.cn/"
-        };
-
         const apiResponse =await fetch(url, {
-            method: 'GET',
-            headers: headers
+            method: 'GET'
         });
         if (!apiResponse.ok) {
             throw new Error(`API responded with status: ${apiResponse.status}`);
