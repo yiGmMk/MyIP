@@ -35,7 +35,7 @@ export async function onRequest({ request, params, env }) {
         });
     }
 
-    const whoisApiUrl = 'https://myipapi.programnotes.cn/api/whois';
+    const whoisApiUrl = 'https://myipapi.vercel.app/api/whois';
 
     try {
         const apiUrl = `${whoisApiUrl}?q=${query}`;

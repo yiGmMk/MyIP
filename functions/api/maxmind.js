@@ -24,8 +24,8 @@ export async function onRequest({ request, params, env }) {
             }
         });
     }
-    // 请求 https://myipapi.programnotes.cn/api/maxmind
-    const api = 'https://myipapi.programnotes.cn/api/maxmind';
+    // 请求 https://myipapi.vercel.app/api/maxmind
+    const api = 'https://myipapi.vercel.app/api/maxmind';
 
     try {
         const apiUrl = `${api}?ip=${ip}&lang=${lang}`;
