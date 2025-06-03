@@ -12,7 +12,7 @@ export async function onRequest({ request, params, env }) {
 
     // 从请求中获取 IP 地址
     const reqUrl = new URL(request.url);
-    const macAddress = reqUrl.searchParams.get('mac');
+    let macAddress = reqUrl.searchParams.get('mac');
     if (!macAddress) {
         return new Response(JSON.stringify({ error: 'No MAC address provided' }), {
             status: 400,
@@ -42,7 +42,15 @@ export async function onRequest({ request, params, env }) {
     const url = token ? url_hasToken : url_noToken;
 
     try {
-        const apiResponse = await fetch(url);
+        const headers = {
+            'Content-Type': 'application/json',
+            "Referer": "https://ip.programnotes.cn/"
+        };
+
+        const apiResponse =await fetch(url, {
+            method: 'GET',
+            headers: headers
+        });
         if (!apiResponse.ok) {
             throw new Error(`API responded with status: ${apiResponse.status}`);
         }
