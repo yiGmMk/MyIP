@@ -11,7 +11,8 @@ export async function onRequest({ request, params, env }) {
     // }
 
     // 从请求中获取 IP 地址
-    let macAddress = params.mac;
+    const reqUrl = new URL(request.url);
+    const macAddress = reqUrl.searchParams.get('mac');
     if (!macAddress) {
         return new Response(JSON.stringify({ error: 'No MAC address provided' }), {
             status: 400,
